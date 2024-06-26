@@ -1,0 +1,25 @@
+{% extends 'layout.html' %}
+{% block content %}
+    <div class="card">
+        <div class="card-header">
+            <h5>Login</h5>
+        </div>
+        <div class="card-body">
+            <form action="" method="POST" class="login-form">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Please enter your username</label>
+                    <input type="text" name="username" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Please enter your password</label>
+                    <input type="password" name="password" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-success w-100 mb-2">Login</button>
+            </form>
+            <div class="d-flex justify-content-between">
+                <a href="/sponser_register" class="btn btn-outline-primary btn-sm">Sponsor Register</a>
+                <a href="/influencer_register" class="btn btn-outline-primary btn-sm">Influencer Register</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

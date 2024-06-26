@@ -1,0 +1,171 @@
+from main import app
+from flask import Flask, render_template, request, redirect, session, url_for, flash
+from models import db, User, CampaignInfluencer, Campaign, SponsorProfile, InfluencerProfile
+from werkzeug.security import generate_password_hash, check_password_hash
+from functools import wraps
+from datetime import datetime
+
+
+# routes
+
+def login_required(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if 'username' not in session:
+            flash("You need to login first")
+            return redirect(url_for('login'))
+        user = User.query.filter_by(username=session['username']).first()
+        if not user:
+            session.pop('username')
+            return redirect(url_for('login'))
+        return func(*args, **kwargs)
+    return wrapper
+
+def admin_required(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if 'username' not in session:
+            flash("You need to login first")
+            return redirect(url_for('login'))
+        user = User.query.filter_by(username=session['username']).first()
+        if not user:
+            session.pop('username')
+            return redirect(url_for('login'))
+        if not user.is_admin:
+            flash("You are not authorized to visit this page")
+            return redirect(url_for('home'))
+        return func(*args, **kwargs)
+    return wrapper
+
+@app.route('/')
+@login_required
+def home():
+    username=session['username']
+    user = User.query.filter_by(username=username).first()
+    if user.type=='admin':
+        return redirect(url_for('admin'))
+    elif user.type=='influencer':
+        return redirect(url_for('influencer_home'))
+    else:
+        return redirect(url_for('sponser_home'))
+    
+@app.route('/sponser_home')
+def sponser_home():
+    return render_template('sponser_home.html')
+
+@app.route('/influencer_home')
+def influencer_home():
+    return render_template('influencer_home.html')
+
+
+
+@app.route('/login')
+def login():
+    return render_template('login.html')
+
+@app.route('/login', methods=['POST'])
+def login_post():
+    username = request.form.get('username')
+    password = request.form.get('password')
+    user = User.query.filter_by(username=username).first()
+    if not user or not check_password_hash(user.passhash, password):
+        flash("Username or password is incorrect")
+        return redirect(url_for('login'))
+    session['username'] = username
+    return redirect(url_for('home'))
+
+@app.route('/influencer_register')
+def influencer_register():
+    return render_template('influencer_register.html')
+
+@app.route('/sponser_register')
+def sponser_register():
+    return render_template('sponser_register.html')
+
+@app.route('/sponser_register', methods=['POST'])
+def sponser_register_post():
+    name = request.form.get('name')
+    username = request.form.get('username')
+    password = request.form.get('password')
+    confirm = request.form.get('confirm')
+
+    # all not nullable inputs are not empty
+    if not username or not password or not confirm:
+        flash("Please fill all the mandatory fields")
+        return redirect(url_for('sponser_register'))
+
+    # confirm and password should be same
+    if password != confirm:
+        flash("Both passwords don't match")
+        return redirect(url_for('sponser_register'))
+
+    # username should be unique
+    user = User.query.filter_by(username=username).first()
+    if user:
+        flash("Please choose another username, selected username is taken")
+        return redirect(url_for('sponser_register'))
+
+
+    passhash = generate_password_hash(password)
+
+    user = User(name=name, username=username, passhash=passhash,type='sponser')
+    db.session.add(user)
+    db.session.commit()
+    flash("Registration Successful, Please login to continue" ,category="success")
+    return redirect(url_for('login'))
+
+@app.route('/sponser_register', methods=['POST'])
+def influencer_register_post():
+    name = request.form.get('name')
+    username = request.form.get('username')
+    password = request.form.get('password')
+    confirm = request.form.get('confirm')
+
+    # all not nullable inputs are not empty
+    if not username or not password or not confirm:
+        flash("Please fill all the mandatory fields")
+        return redirect(url_for('Influencer_register'))
+
+    # confirm and password should be same
+    if password != confirm:
+        flash("Both passwords don't match")
+        return redirect(url_for('Influencer_register'))
+
+    # username should be unique
+    user = User.query.filter_by(username=username).first()
+    if user:
+        flash("Please choose another username, selected username is taken")
+        return redirect(url_for('Influencer_register'))
+
+
+    passhash = generate_password_hash(password)
+
+    user = User(name=name, username=username, passhash=passhash,type='influencer')
+    db.session.add(user)
+    db.session.commit()
+    flash("Registration Successful, Please login to continue" ,category="success")
+    return redirect(url_for('login'))
+
+@app.route('/logout')
+@login_required
+def logout():
+    session.pop('username')
+    return redirect(url_for('login'))
+
+@app.route('/profile')
+@login_required
+def profile():
+    username=session['username']
+    user = User.query.filter_by(username=username).first()
+    if user.type=='sponser':
+        return render_template('sponser_profile.html',user=user)
+    elif user.type=='influencer':
+        return render_template('influencer_profile.html',user=user)
+    else:
+        return render_template('admin_profile.html',user=user)
+    
+
+
+
+
+#flash("sdyu",category='success or delete')
