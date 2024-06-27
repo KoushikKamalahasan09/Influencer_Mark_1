@@ -216,4 +216,12 @@ def admin():
     users = User.query.all()
     return render_template('admin.html', users=users)
 
+
+@app.route('/users')
+@admin_required
+def user_list():
+    users = User.query.all()
+    return render_template('admin_users.html', users=users)
+
+
 #flash("sdyu",category='success or delete')
