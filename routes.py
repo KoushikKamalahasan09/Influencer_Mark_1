@@ -43,7 +43,7 @@ def home():
     username=session['username']
     user = User.query.filter_by(username=username).first()
     if user.type=='Admin':
-        return render_template('admin.html',user=user)
+        return redirect(url_for('admin'))
     elif user.type=='Influencer':
         return render_template('influencer_home.html',user=user)
     else:
@@ -106,7 +106,15 @@ def sponsor_register_post():
     if user:
         flash("Please choose another username, selected username is taken")
         return redirect(url_for('sponsor_register'))
-
+    
+    if len(username)<5:
+        flash("Username must be at a minimum of 5 characters")
+        return redirect(url_for('sponsor_register'))
+    
+    if len(password)<5:
+        flash("Password must be at a minimum of 5 characters")
+        return redirect(url_for('sponsor_register'))
+    
 
     passhash = generate_password_hash(password)
 
@@ -213,8 +221,10 @@ def profile_post():
 @app.route('/admin')
 @admin_required
 def admin():
+    username=session['username']
+    user = User.query.filter_by(username=username).first()
     users = User.query.all()
-    return render_template('admin.html', users=users)
+    return render_template('admin.html', users=users,user=user)
 
 
 @app.route('/users')
