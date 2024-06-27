@@ -1,0 +1,50 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5>Profile Information</h5>
+    </div>
+    <div class="card-body text-center">
+        <div class="profileinfo">
+            <h1>Username: {{ user.username }}</h1>
+            <h3>Role: {{ user.type }}</h3>
+            <h3>Name: {{ user.name }}</h3>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5>Update Profile</h5>
+    </div>
+    <div class="card-body">
+        <form action="" method="post" class="profile-form">
+            <div class="mb-3">
+                <label class="form-label" for="username">Please enter your new username:</label>
+                <input class="form-control" type="text" name="username" id="username" value="{{ user.username }}" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="password">Current Password:</label>
+                <input class="form-control" type="password" name="password" id="password" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="npassword">New Password:</label>
+                <input class="form-control" type="password" name="npassword" id="npassword" required>
+            </div>
+            <button class="btn btn-primary" type="submit">Change</button>
+        </form>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5>Account Management</h5>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('delete_user', id=user.user_id) }}" method="post">
+            <button class="btn btn-danger" type="submit">Delete my account</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

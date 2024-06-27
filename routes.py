@@ -31,9 +31,9 @@ def admin_required(func):
         if not user:
             session.pop('username')
             return redirect(url_for('login'))
-        if not user.type=='admin':
-            flash("You are not authorized to visit this page")
-            return redirect(url_for('home'))
+        if not user.type=='Admin':
+            flash("You are not authorized to visit this page",category='delete')
+            return redirect(url_for('login'))
         return func(*args, **kwargs)
     return wrapper
 
@@ -42,18 +42,20 @@ def admin_required(func):
 def home():
     username=session['username']
     user = User.query.filter_by(username=username).first()
-    if user.type=='admin':
+    if user.type=='Admin':
         return redirect(url_for('admin'))
-    elif user.type=='influencer':
+    elif user.type=='Influencer':
         return redirect(url_for('influencer_home'))
     else:
         return redirect(url_for('sponsor_home'))
     
 @app.route('/sponsor_home')
+@login_required
 def sponsor_home():
     return render_template('sponsor_home.html')
 
 @app.route('/influencer_home')
+@login_required
 def influencer_home():
     return render_template('influencer_home.html')
 
@@ -69,7 +71,7 @@ def login_post():
     password = request.form.get('password')
     user = User.query.filter_by(username=username).first()
     if not user or not check_password_hash(user.passhash, password):
-        flash("Username or password is incorrect")
+        flash("Username or password is incorrect",category='delete')
         return redirect(url_for('login'))
     session['username'] = username
     return redirect(url_for('home'))
@@ -108,7 +110,7 @@ def sponsor_register_post():
 
     passhash = generate_password_hash(password)
 
-    user = User(name=name, username=username, passhash=passhash,type='sponsor')
+    user = User(name=name, username=username, passhash=passhash,type='Sponsor')
     db.session.add(user)
     db.session.commit()
     flash("Registration Successful, Please login to continue" ,category="success")
@@ -140,7 +142,7 @@ def influencer_register_post():
 
     passhash = generate_password_hash(password)
 
-    user = User(name=name, username=username, passhash=passhash,type='influencer')
+    user = User(name=name, username=username, passhash=passhash,type='Influencer')
     db.session.add(user)
     db.session.commit()
     flash("Registration Successful, Please login to continue" ,category="success")
@@ -157,15 +159,61 @@ def logout():
 def profile():
     username=session['username']
     user = User.query.filter_by(username=username).first()
-    if user.type=='sponsor':
-        return render_template('sponsor_profile.html',user=user)
-    elif user.type=='influencer':
-        return render_template('influencer_profile.html',user=user)
-    else:
-        return render_template('admin_profile.html',user=user)
+    return render_template('profile.html',user=user)
     
+@app.route('/users/<int:id>/delete', methods=['POST'])
+@login_required
+def delete_user(id):
+    user = User.query.get(id)
+    current_user = User.query.filter_by(username=session['username']).first()
+    if not user:
+        flash("Invalid User ID")
+        return redirect(url_for('profile'))
+    if user.username != session['username'] and not current_user.type=='Admin':
+        flash("You are not authorized to perform this action")
+        return redirect(url_for('profile'))
+    if user.type=='Admin':
+        flash("You cannot delete an admin")
+        return redirect(url_for('profile'))
+
+    db.session.delete(user)
+    db.session.commit()
+    flash("Delete succcessful")
+    return redirect(url_for('profile'))
 
 
+@app.route('/profile', methods=['POST'])
+@login_required
+def profile_post():
+    nusername = request.form.get('username')
+    password = request.form.get('password')
+    npassword = request.form.get('npassword')
+    username=session['username']
+    user = User.query.filter_by(username=username).first()
 
+    if password != "" and npassword != "":
+        if check_password_hash(user.passhash, password):
+            user.passhash = generate_password_hash(npassword)
+            flash("Password changed successfully")
+        else:
+            flash("Entered current password is incorrect")
+
+    if nusername != user.username and nusername != "":
+        quser = User.query.filter_by(username=nusername).first()
+        if quser:
+            flash("Username is already taken, please choose any other username")
+            return redirect(url_for('profile'))
+        user.username = nusername
+        session['username']=nusername
+        flash(f"Username changed to {nusername}")
+
+    db.session.commit()
+    return redirect(url_for('profile'))
+
+@app.route('/admin')
+@admin_required
+def admin():
+    users = User.query.all()
+    return render_template('admin.html', users=users)
 
 #flash("sdyu",category='success or delete')

@@ -12,9 +12,13 @@
         body {
             font-family: 'Arial', sans-serif;
             background-color: #26c2e1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
         .container {
             margin-top: 20px;
+            flex: 1;
         }
         .navbar {
             margin-bottom: 20px;
@@ -59,9 +63,6 @@
             color: white;
             padding: 10px 0;
             text-align: center;
-            position: fixed;
-            width: 100%;
-            bottom: 0;
         }
     </style>
     {% endblock style %}
@@ -71,15 +72,7 @@
     {% include 'message.html' %}
     <div class="container">
         {% block content %}
-        <div class="card">
-            <div class="card-header">
-                <h5>Welcome to Connect</h5>
-            </div>
-            <div class="card-body">
-                <p>This is a sample template with enhanced styles using Bootstrap and custom CSS.</p>
-                <button type="button" class="btn btn-primary">Get Started</button>
-            </div>
-        </div>
+
         {% endblock content %}
     </div>
     <footer>
