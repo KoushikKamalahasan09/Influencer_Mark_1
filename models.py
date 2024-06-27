@@ -10,7 +10,7 @@ class User(db.Model):
     user_id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), unique=True, nullable=False)
     passhash = db.Column(db.String(150), nullable=False)
-    type = db.Column(db.Enum('influencer', 'sponser', 'admin', name='user_type'), nullable=False)
+    type = db.Column(db.Enum('influencer', 'sponsor', 'admin', name='user_type'), nullable=False)
     name = db.Column(db.String(150), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.now())
     updated_at = db.Column(db.DateTime, default=datetime.now(), onupdate=datetime.now())

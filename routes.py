@@ -31,7 +31,7 @@ def admin_required(func):
         if not user:
             session.pop('username')
             return redirect(url_for('login'))
-        if not user.is_admin:
+        if not user.type=='admin':
             flash("You are not authorized to visit this page")
             return redirect(url_for('home'))
         return func(*args, **kwargs)
@@ -47,11 +47,11 @@ def home():
     elif user.type=='influencer':
         return redirect(url_for('influencer_home'))
     else:
-        return redirect(url_for('sponser_home'))
+        return redirect(url_for('sponsor_home'))
     
-@app.route('/sponser_home')
-def sponser_home():
-    return render_template('sponser_home.html')
+@app.route('/sponsor_home')
+def sponsor_home():
+    return render_template('sponsor_home.html')
 
 @app.route('/influencer_home')
 def influencer_home():
@@ -78,12 +78,12 @@ def login_post():
 def influencer_register():
     return render_template('influencer_register.html')
 
-@app.route('/sponser_register')
-def sponser_register():
-    return render_template('sponser_register.html')
+@app.route('/sponsor_register')
+def sponsor_register():
+    return render_template('sponsor_register.html')
 
-@app.route('/sponser_register', methods=['POST'])
-def sponser_register_post():
+@app.route('/sponsor_register', methods=['POST'])
+def sponsor_register_post():
     name = request.form.get('name')
     username = request.form.get('username')
     password = request.form.get('password')
@@ -92,29 +92,29 @@ def sponser_register_post():
     # all not nullable inputs are not empty
     if not username or not password or not confirm:
         flash("Please fill all the mandatory fields")
-        return redirect(url_for('sponser_register'))
+        return redirect(url_for('sponsor_register'))
 
     # confirm and password should be same
     if password != confirm:
         flash("Both passwords don't match")
-        return redirect(url_for('sponser_register'))
+        return redirect(url_for('sponsor_register'))
 
     # username should be unique
     user = User.query.filter_by(username=username).first()
     if user:
         flash("Please choose another username, selected username is taken")
-        return redirect(url_for('sponser_register'))
+        return redirect(url_for('sponsor_register'))
 
 
     passhash = generate_password_hash(password)
 
-    user = User(name=name, username=username, passhash=passhash,type='sponser')
+    user = User(name=name, username=username, passhash=passhash,type='sponsor')
     db.session.add(user)
     db.session.commit()
     flash("Registration Successful, Please login to continue" ,category="success")
     return redirect(url_for('login'))
 
-@app.route('/sponser_register', methods=['POST'])
+@app.route('/influencer_register', methods=['POST'])
 def influencer_register_post():
     name = request.form.get('name')
     username = request.form.get('username')
@@ -157,8 +157,8 @@ def logout():
 def profile():
     username=session['username']
     user = User.query.filter_by(username=username).first()
-    if user.type=='sponser':
-        return render_template('sponser_profile.html',user=user)
+    if user.type=='sponsor':
+        return render_template('sponsor_profile.html',user=user)
     elif user.type=='influencer':
         return render_template('influencer_profile.html',user=user)
     else:
