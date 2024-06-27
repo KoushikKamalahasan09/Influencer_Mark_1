@@ -43,11 +43,11 @@ def home():
     username=session['username']
     user = User.query.filter_by(username=username).first()
     if user.type=='Admin':
-        return redirect(url_for('admin'))
+        return render_template('admin.html',user=user)
     elif user.type=='Influencer':
-        return redirect(url_for('influencer_home'))
+        return render_template('influencer_home.html',user=user)
     else:
-        return redirect(url_for('sponsor_home'))
+        return render_template('sponsor_home.html',user=user)
     
 @app.route('/sponsor_home')
 @login_required

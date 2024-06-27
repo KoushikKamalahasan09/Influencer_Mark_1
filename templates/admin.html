@@ -1,15 +1,22 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-    
-    <h1>Admin Dashboard</h1>
-    <hr>
+    <div class="card">
+        <div class="card-body">
+            <h1 class="card-title">Admin Dashboard</h1>
+            <h2>{{ user.name }}</h2>
+            <hr>
 
-    <h2>Users</h2>
-    <p>Number of registered users: {{ users | length }}</p>
-    <a href="{{ url_for('user_list') }}" class="btn btn-outline-primary btn-sm">
-        <i class="fas fa-users"></i> <!-- Using Font Awesome 6 icon -->
-        List Users
-    </a>
-    
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">Users</h2>
+                    <p class="card-text">Number of registered users: {{ users | length }}</p>
+                    <a href="{{ url_for('user_list') }}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-users"></i>
+                        List Users
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
